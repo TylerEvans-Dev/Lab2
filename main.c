@@ -76,7 +76,10 @@ void SystemClock_Config(void);
  ORANGE = 8
  GREEN = 9
  */
-
+/**
+ @function EXTI0_1_IRQHandler
+ @brief this is the intrupt function for exit0_1
+ */
 void EXTI0_1_IRQHandler(void){
     GPIOC->ODR ^= (1<<9);
     GPIOC->ODR ^= (1<<8);
@@ -113,18 +116,24 @@ int main(void)
     GPIOA->PUPDR &= 0; // sets it to a default mode
     GPIOA->PUPDR |= (1 << 2);// this sets it to the pulldown state. this is 1 0
     GPIOC->ODR |= (1<<9); //switiching green
-    //EXTI->IMR |= 0; //enables the input signal
-    //EXTI->RTSR |= 0; // enables the Rise signal detection
+    /*
+     This section right here is the EXTI setup here IMR is the intrupt mask regeister this unmasks /enables when intrupts are left alone they are masked from the CPU so in order to make sure that the stuff   */
+    EXTI->IMR |= 1; //enables the input signal
+    EXTI->RTSR |= 1; // enables the Rise signal detection
     //here is
+    /*
+     This code below gets the PA0 from the mutiplexer and then
+     sets up a handler for an  intrupt. NVIC enables the intrupt
+     setPriorty sets the prio. on the intrupt.
+     These are the steps needed. It seems
+     like a lot for just one interupt.
+     */
     SYSCFG->EXTICR[0] |= 0x000; // gets A0 from the multiplexer.
     NVIC_EnableIRQ(EXTI0_1_IRQn); // setting up the handler.
     NVIC_SetPriority(EXTI0_1_IRQn, 1); //sets the priorty to be 1
     while(1) {
         GPIOC->ODR  ^=  (1<<6);
         HAL_Delay(400);
-        if(GPIOA->IDR & 1){
-            EXTI0_1_IRQHandler();
-        }
         
     }
 
